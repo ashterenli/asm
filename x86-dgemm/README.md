@@ -107,8 +107,9 @@ OMP_NUM_THREADS=8 ./dgemm.x
 
 Note that my CPU does not support avx512, only avx256.
 
-In order from progressive optimisation, the naive
-2D array code is in `mm.c`.
+The several implementations are discussed in order of increasing optimisation.
+
+The naive 2D array code is in `mm.c`.
 The key fragment of the resulting asm on my system is:
 ```
  37                                         # =>    This Inner Loop Header: Depth=3
