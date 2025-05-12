@@ -27,7 +27,7 @@ make run
 ```
 
 8 omp threads are used by default (total threads on my laptop).
-Adjust `OMP_NUM_THREDS' in `Makefile` for your system.
+Adjust `OMP_NUM_THREDS` in `Makefile` for your system.
 
 Running on FreeBSD 14-2 laptop with:
 
