@@ -44,51 +44,50 @@ int main()
    long double wtime, wtime1;
 
    t1 = clock();   
-   mm(c,a,b);  
-   t2 = clock();
-   wtime1 = (long double)(t2 - t1) / CLOCKS_PER_SEC;
-   printf("%25s %20.10Le\n", "mm wtime", wtime1);
-
-   t1 = clock();   
-   mm1d(DIM, a1, b1, c1);
+   mm2d(c,a,b);  
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
-   printf("%25s %20.10Le, which is %10Le faster than initial version\n", "mm1d wtime",
-           wtime, wtime1/wtime);
+   printf("%15s %15.5Le\n", "mm2d wtime", wtime);
+
+   t1 = clock();   
+   mm(DIM, a1, b1, c1);
+   t2 = clock();
+   wtime1 = (long double)(t2 - t1) / CLOCKS_PER_SEC;
+   printf("%15s %15.5Le\n", "mm wtime", wtime1);
 
    t1 = clock();   
    mmasmu(DIM, a1, b1, c2);
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
-   printf("%25s %20.10Le, which is %10Le faster than initial version\n", "mmasmu wtime",
+   printf("%15s %15.5Le, which is %10Le faster than mm version\n", "mmasmu wtime",
            wtime, wtime1/wtime);
 
    t1 = clock();   
    mmasm(DIM, a1, b1, c3);
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
-   printf("%25s %20.10Le, which is %10Le faster than initial version\n", "mmasm wtime",
+   printf("%15s %15.5Le, which is %10Le faster than mm version\n", "mmasm wtime",
            wtime, wtime1/wtime);
 
    t1 = clock();   
    mmasmlu(DIM, a1, b1, c4);
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
-   printf("%25s %20.10Le, which is %10Le faster than initial version\n", "mmasmlu wtime",
+   printf("%15s %15.5Le, which is %10Le faster than mm version\n", "mmasmlu wtime",
            wtime, wtime1/wtime);
 
    t1 = clock();   
    mmcb(DIM, a1, b1, c5);
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
-   printf("%25s %20.10Le, which is %10Le faster than initial version\n", "mmcb wtime",
+   printf("%15s %15.5Le, which is %10Le faster than mm version\n", "mmcb wtime",
            wtime, wtime1/wtime);
 
    double tomp1 = omp_get_wtime();
    mmomp(DIM, a1, b1, c6);
    double tomp2 = omp_get_wtime();
    wtime = (long double)(tomp2 - tomp1);
-   printf("%25s %20.10Le, which is %10Le faster than initial version\n", "mmomp wtime",
+   printf("%15s %15.5Le, which is %10Le faster than mm version\n", "mmomp wtime",
            wtime, wtime1/wtime);
 
    // check

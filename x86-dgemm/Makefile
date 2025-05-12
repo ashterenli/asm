@@ -1,5 +1,5 @@
 HEAD=	dgemm.h
-SRC=	mm.c mm1d.c mmasmu.c mmasm.c mmasmlu.c block.c mmcb.c mmomp.c dgemm.c
+SRC=	mm2d.c mm.c mmasmu.c mmasm.c mmasmlu.c block.c mmcb.c mmomp.c dgemm.c
 OBJ=	$(SRC:.c=.o)
 TMP=	$(SRC:.c=.bc) $(SRC:.c=.i) $(SRC:.c=.s)
 EXE=	dgemm.x

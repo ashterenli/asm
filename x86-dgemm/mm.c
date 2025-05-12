@@ -1,14 +1,13 @@
 #include "dgemm.h"
 
-/* native matrix multiply, 2d arrays */
-void mm(double *c[], double *a[], double *b[])
+/* naive matrix multiply, 1d arrays */
+void mm(int n, double* a, double* b, double* c)
 {
-   int i, j, k;
-
-   for (i=0; i<DIM; ++i) 
-   for (j=0; j<DIM; ++j) {
-      c[i][j] = 0.0;
-      for (k=0; k<DIM; ++k) 
-         c[i][j] += a[i][k] * b[k][j];
-   }
+   for (int i=0; i<n; ++i) 
+      for (int j=0; j<n; ++j)  {
+         double cij = 0.0; // c[i*n+j];
+         for (int k=0; k<n; ++k)
+            cij += a[i*n+k] * b[k*n+j];
+         c[i*n+j] = cij;
+      }
 }
