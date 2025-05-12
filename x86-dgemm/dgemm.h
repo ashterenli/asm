@@ -2,7 +2,7 @@
 // #include <immintrin.h>
 #include <omp.h>
 
-#define   DIM       (1024) // (4096)
+#define   DIM       (1024) //(4096) //(2048)
 #define   TOL       (1e-10)
 #define   UNROLL    (4)
 #define   BLOCKSIZE (32)

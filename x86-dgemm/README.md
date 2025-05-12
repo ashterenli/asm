@@ -90,6 +90,19 @@ OMP_NUM_THREADS=8 ./dgemm.x
               mmomp wtime     5.9656906128e-01, which is 8.345901e+01 faster than initial version
 ```
 
+and ~100x for `DIM=4096`:
+
+```
+OMP_NUM_THREADS=8 ./dgemm.x
+                 mm wtime     5.8110937500e+02
+               mm1d wtime     1.0639609375e+03, which is 5.461755e-01 faster than initial version
+             mmasmu wtime     2.5222656250e+02, which is 2.303918e+00 faster than initial version
+              mmasm wtime     2.5587500000e+02, which is 2.271067e+00 faster than initial version
+            mmasmlu wtime     9.0406250000e+01, which is 6.427757e+00 faster than initial version
+               mmcb wtime     1.6835937500e+01, which is 3.451601e+01 faster than initial version
+              mmomp wtime     5.6185159683e+00, which is 1.034276e+02 faster than initial version
+```
+
 # asm analysis
 
 Note that my CPU does not support avx512, only avx256.
