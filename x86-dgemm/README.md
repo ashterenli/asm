@@ -73,4 +73,16 @@ OMP_NUM_THREADS=8 ./dgemm.x
 i.e. the best version is ~140x faster than the initial naive version.
 The fastest version uses x86 asm intrinsics for packed doubles,
 loop unrolling, cache blocking and OpenMP threading.
+
+For `DIM=2048` the max speed-up is ~80x:
+```
+OMP_NUM_THREADS=8 ./dgemm.x
+                 mm wtime     4.9789062500e+01
+               mm1d wtime     1.2723437500e+02, which is 3.913177e-01 faster than initial version
+             mmasmu wtime     2.9500000000e+01, which is 1.687765e+00 faster than initial version
+              mmasm wtime     2.9070312500e+01, which is 1.712712e+00 faster than initial version
+            mmasmlu wtime     1.0625000000e+01, which is 4.686029e+00 faster than initial version
+               mmcb wtime     1.9531250000e+00, which is 2.549200e+01 faster than initial version
+              mmomp wtime     5.9656906128e-01, which is 8.345901e+01 faster than initial version
+```
  
