@@ -1,3 +1,5 @@
+[TOC]
+
 This example is motivated by sections "Going faster"
 from Patterson and Hennessy "Computer Organization and Design".
 I'm looking at 5th edition, from 2014.
@@ -133,8 +135,9 @@ Note that my CPU does not support avx512, only avx256.
 
 The several implementations are discussed in order of increasing optimisation.
 
-The naive 2D array code is in `mm.c`.
-The key fragment of the resulting asm on my system is:
+## The naive 2D array code is in `mm.c`
+
+The key fragment of the asm on my system is:
 ```
  37                                         # =>    This Inner Loop Header: Depth=3
  38         vmovsd  (%r8,%r10,8), %xmm1             # xmm1 = mem[0],zero
@@ -153,8 +156,10 @@ which shows the use of 128-bit xmm registers,
 and `sd` asm intrinsics i.e. only a single double
 is loaded into the register, no vector operation.
 
-The key asm fragment of the naive 1D version, `mm1d.c`,
-is very similar:
+## The naive 1D version, `mm1d.c`
+
+The key asm fragment of the naive 1D version
+is very similar to the 2D version:
 
 ```
 110                                         # =>    This Inner Loop Header: Depth=3
