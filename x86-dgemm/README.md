@@ -331,3 +331,16 @@ not registers, because the compiler knows
 all sizes.
 
 ## Same but with aligned load/store, `mmasm.c`.
+
+As expected, the only difference compared to the `mmasmu` asm,
+is L67:
+```
+ 67         vmovapd %ymm0, (%r15,%r13,8)
+```
+i.e. aligned store instead of unaligned.
+
+The reason I made an unaligned version, is that
+the aligned version would segv for some array lengths.
+I need to investigate this further, and maybe compile
+with forced alignment.
+
