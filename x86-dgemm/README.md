@@ -48,10 +48,14 @@ Model:                   142
 Model name:              Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
 ```
 
-This CPU uses Kaby Lake R microarch.
-According to
-https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake
-this is a superscalar microarch,
+This CPU uses Kaby Lake R core:
+https://en.wikichip.org/wiki/intel/cores/kaby_lake_r,
+which is based on Kaby Lake microarch:
+https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake,
+which itself seems to be very similar to, or even identical,
+to Skylake.
+
+This is a superscalar microarch,
 supporting speculative execution and register
 renaming.
 The pipeline has 14-19 stages.
