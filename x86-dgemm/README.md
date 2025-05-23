@@ -277,8 +277,19 @@ which for `mmasmu.c` are:
 void mmasmu(int n, double* a, double* b, double* c)
 ```
 
-So `rdx` has the address of array `b`.
-
+So `rdx` has the address of array `b`,
+which is than copied to `r12`:
+```
+ 85         movq    %rdx, %r12
+```
+and the following vector mul uses the memory location
+directly, i.e. bypassing the vector load into a register:
+```
+ 93         vmulpd  (%r12), %ymm1, %ymm1
+```
+Remember that x86 is *not* a load/store arch,
+i.e. it has instruction to operate on memory
+directly, without first loading into registers.
 
 To check that the tail code is due to compiler not
 knowing the array length, I made a version of `mmasmu`
@@ -318,8 +329,5 @@ The vector store is now in the tail code, L54.
 Note also that L44,50-51 now have immediates,
 not registers, because the compiler knows
 all sizes.
-
-Still, I can't see in the asm the
-vector load of `b`.
 
 ## Same but with aligned load/store, `mmasm.c`.
