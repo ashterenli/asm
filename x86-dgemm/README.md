@@ -187,7 +187,7 @@ is very similar to the 2D version:
 122         vaddsd  %xmm0, %xmm1, %xmm0
 ```
 
-## Adding asm intrinsics, load/store are not aligned, `mmasmu.c`.
+## Adding asm intrinsics, load/store are not aligned, `mmasmu.c`
 
 The unaligned load/store asm intrinsics are:
 `_mm256_loadu_pd` and `_mm256_storeu_pd`.
@@ -343,4 +343,78 @@ The reason I made an unaligned version, is that
 the aligned version would segv for some array lengths.
 I need to investigate this further, and maybe compile
 with forced alignment.
+
+## Adding loop unrolling, `mmasmlu.c`
+
+With unrolling by 4 I get this asm:
+```
+ 61 .LBB0_4:                                #   Parent Loop BB0_2 Depth=1
+ 62                                         #     Parent Loop BB0_3 Depth=2
+ 63                                         # =>    This Inner Loop Header: Depth=3
+ 64         vbroadcastsd    (%rsi,%r12,8), %ymm4
+ 65         vmulpd  -96(%r15), %ymm4, %ymm5
+ 66         vaddpd  %ymm5, %ymm3, %ymm3
+ 67         vmulpd  -64(%r15), %ymm4, %ymm5
+ 68         vmulpd  -32(%r15), %ymm4, %ymm6
+ 69         vaddpd  %ymm5, %ymm2, %ymm2
+ 70         vaddpd  %ymm6, %ymm1, %ymm1
+ 71         vmulpd  (%r15), %ymm4, %ymm4
+ 72         vaddpd  %ymm4, %ymm0, %ymm0
+ 73         incq    %r12
+ 74         addq    %r8, %r15
+ 75         cmpq    %r12, %rax
+ 76         jne     .LBB0_4
+ 77 # %bb.5:                                # %..preheader_crit_edge.us.us
+ 78                                         #   in Loop: Header=BB0_3 Depth=2
+ 79         vmovapd %ymm3, (%r10,%r14)
+ 80         vmovapd %ymm2, 32(%r10,%r14)    
+ 81         vmovapd %ymm1, 64(%r10,%r14)
+ 82         vmovapd %ymm0, 96(%r10,%r14)
+```
+
+As expected, note 4x mul and 4x add in the loop,
+with offsets of 32 bytes (256 bits).
+After the innermost loop, there are 4x store instructions,
+again offset by 32 bytes.
+
+Unrolling by 8 also gives the expected asm,
+but this version is slower than unrolling by 4:
+```
+ 55 .LBB0_4:                                #   Parent Loop BB0_2 Depth=1
+ 56                                         #     Parent Loop BB0_3 Depth=2
+ 57                                         # =>    This Inner Loop Header: Depth=3
+ 58         vbroadcastsd    (%rsi,%r14,8), %ymm8
+ 59         vmulpd  -448(%rbx), %ymm8, %ymm9
+ 60         vaddpd  %ymm7, %ymm9, %ymm7
+ 61         vmulpd  -384(%rbx), %ymm8, %ymm9
+ 62         vmulpd  -320(%rbx), %ymm8, %ymm10
+ 63         vaddpd  %ymm6, %ymm9, %ymm6
+ 64         vaddpd  %ymm5, %ymm10, %ymm5
+ 65         vmulpd  -256(%rbx), %ymm8, %ymm9
+ 66         vaddpd  %ymm4, %ymm9, %ymm4
+ 67         vmulpd  -192(%rbx), %ymm8, %ymm9
+ 68         vaddpd  %ymm3, %ymm9, %ymm3
+ 69         vmulpd  -128(%rbx), %ymm8, %ymm9
+ 70         vmulpd  -64(%rbx), %ymm8, %ymm10
+ 71         vaddpd  %ymm2, %ymm9, %ymm2
+ 72         vaddpd  %ymm1, %ymm10, %ymm1
+ 73         vmulpd  (%rbx), %ymm8, %ymm8
+ 74         vaddpd  %ymm0, %ymm8, %ymm0
+ 75         incq    %r14
+ 76         addq    %rdi, %rbx
+ 77         cmpq    %r14, %rax
+ 78         jne     .LBB0_4
+ 79 # %bb.5:                                # %..preheader_crit_edge.us.us
+ 80                                         #   in Loop: Header=BB0_3 Depth=2
+ 81         vmovapd %ymm7, (%r9,%r11,8)
+ 82         vmovapd %ymm6, 64(%r9,%r11,8)   
+ 83         vmovapd %ymm5, 128(%r9,%r11,8)
+ 84         vmovapd %ymm4, 192(%r9,%r11,8)
+ 85         vmovapd %ymm3, 256(%r9,%r11,8)
+ 86         vmovapd %ymm2, 320(%r9,%r11,8)
+ 87         vmovapd %ymm1, 384(%r9,%r11,8)
+ 88         vmovapd %ymm0, 448(%r9,%r11,8)
+```
+
+
 

@@ -4,7 +4,7 @@
 
 #define   DIM       (1024) // (4096) // (2048) // (512)
 #define   TOL       (1e-10)
-#define   UNROLL    (4)
+#define   UNROLL    (8)
 #define   BLOCKSIZE (32)
 
 void mm2d(double *c[], double *a[], double *b[]);
