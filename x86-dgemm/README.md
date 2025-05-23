@@ -220,6 +220,7 @@ there are also a head and tail code:
  95         vbroadcastsd    (%r11,%rbx,8), %ymm1
  96         vmulpd  (%r12,%r9), %ymm1, %ymm1
  97         vaddpd  %ymm1, %ymm0, %ymm0
+
  98         addq    $2, %rbx
  99         addq    %r10, %r12
 100         cmpq    %rbx, %r8
