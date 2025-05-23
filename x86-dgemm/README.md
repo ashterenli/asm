@@ -265,7 +265,61 @@ L98 increments the loop counter by 2.
 
 So overall the code has 10 vector instructions:
 3x bcast, 3x mul, 3x adds and 1x store.
-Strangely I cannot find a vector load of `b`
+
+Note that there is no `vmovupd` for a vector load of `b`
 corresponding to `_mm256_loadu_pd(b+k*n+j)`.
+Instead, what happens is this -- according to the amd64
+calling convention the first 4 arguments are
+passed in registers `rdi`, `rsi`, `rdx` and `rcx`:
+https://gitlab.com/x86-psABIs/x86-64-ABI,
+which for `mmasmu.c` are:
+```
+void mmasmu(int n, double* a, double* b, double* c)
+```
+
+So `rdx` has the address of array `b`.
+
+
+To check that the tail code is due to compiler not
+knowing the array length, I made a version of `mmasmu`
+which takes the array length directly from `dgemm.h`:
+```
+  7 void mmasmu2(double* a, double* b, double* c)
+  8 {
+  9    for (int i=0; i<DIM; ++i)
+ 10       for (int j=0; j<DIM; j+=4) {
+ 11          __m256d c0 = _mm256_set1_pd(0.0);
+ 12          for (int k=0; k<DIM; ++k) {
+```
+and so on.
+
+and indeed, this compiles to a much simpler asm:
+```
+ 40 .LBB0_3:                                #   Parent Loop BB0_1 Depth=1
+ 41                                         #     Parent Loop BB0_2 Depth=2
+ 42                                         # =>    This Inner Loop Header: Depth=3
+ 43         vbroadcastsd    -8(%rdi,%r11,8), %ymm1
+ 44         vmulpd  -8192(%r10), %ymm1, %ymm1
+ 45         vaddpd  %ymm1, %ymm0, %ymm0
+ 46         vbroadcastsd    (%rdi,%r11,8), %ymm1
+ 47         vmulpd  (%r10), %ymm1, %ymm1
+ 48         vaddpd  %ymm1, %ymm0, %ymm0
+ 49         addq    $2, %r11
+ 50         addq    $16384, %r10                    # imm = 0x4000
+ 51         cmpq    $1024, %r11                     # imm = 0x400
+ 52         jne     .LBB0_3
+ 53 # %bb.4:                                #   in Loop: Header=BB0_2 Depth=2
+ 54         vmovupd %ymm0, (%rcx,%r9,8)
+```
+
+with only 2x bcast, 2x mul and 2x add vector calls.
+The vector store is now in the tail code, L54.
+
+Note also that L44,50-51 now have immediates,
+not registers, because the compiler knows
+all sizes.
+
+Still, I can't see in the asm the
+vector load of `b`.
 
 ## Same but with aligned load/store, `mmasm.c`.
