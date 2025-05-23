@@ -145,7 +145,7 @@ Note that my CPU does not support avx512, only avx256.
 
 The several implementations are discussed in order of increasing optimisation.
 
-## The naive 2D array code is in `mm.c`
+## The naive 2D array code, `mm.c`
 
 The key fragment of the asm on my system is:
 ```
