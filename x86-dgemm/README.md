@@ -378,7 +378,11 @@ After the innermost loop, there are 4x store instructions,
 again offset by 32 bytes.
 
 Unrolling by 8 also gives the expected asm,
-but this version is slower than unrolling by 4:
+but this version is slower than unrolling by 4,
+perhaps because of increased cache misses,
+or due to inability of the multiple issue
+pipeline to schedule istructions to minimise
+stalls:
 ```
  55 .LBB0_4:                                #   Parent Loop BB0_2 Depth=1
  56                                         #     Parent Loop BB0_3 Depth=2
