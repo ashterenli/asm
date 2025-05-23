@@ -1,5 +1,3 @@
-[TOC]
-
 This example is motivated by sections "Going faster"
 from Patterson and Hennessy "Computer Organization and Design".
 I'm looking at 5th edition, from 2014.
@@ -35,7 +33,7 @@ Adjust `OMP_NUM_THREDS` in `Makefile` for your system.
 I compile with `-O3 -mavx2` (see the `Makefile`)
 using `FreeBSD clang version 18.1.6`.
 
-Running on FreeBSD 14-2 laptop with:
+Running on FreeBSD 14.2 laptop with:
 
 ```
 Architecture:            amd64
@@ -50,7 +48,15 @@ Model:                   142
 Model name:              Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
 ```
 
-and 2x16 GB = 32 GB ddr4 memory:
+This CPU uses Kaby Lake R microarch.
+According to
+https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake
+this is a superscalar microarch,
+supporting speculative execution and register
+renaming.
+The pipeline has 14-19 stages.
+
+The test system and 2x16 GB = 32 GB ddr4 memory:
 
 ```
         Size: 16 GB
@@ -177,8 +183,10 @@ is very similar to the 2D version:
 122         vaddsd  %xmm0, %xmm1, %xmm0
 ```
 
-The next version is `mmasmu.c`, which uses
-the unaligned load/store asm intrinsics.
+## Adding asm intrinsics, load/store are not aligned, `mmasmu.c`.
+
+The unaligned load/store asm intrinsics are:
+`_mm256_loadu_pd` and `_mm256_storeu_pd`.
 The key fragment shows the use of ymm 256-bit registers
 and `pd` versions of arm intrinsics, which operate
 with packed doubles, i.e. 4x 64-bit doubles in
@@ -194,3 +202,6 @@ with packed doubles, i.e. 4x 64-bit doubles in
  97         vaddpd  %ymm1, %ymm0, %ymm0
 ```
 
+Note 2x broadcasts, 2x multiplications and 2x adds.
+
+## Same but with aligned load/store, `mmasm.c`.

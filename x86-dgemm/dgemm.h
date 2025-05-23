@@ -10,6 +10,7 @@
 void mm2d(double *c[], double *a[], double *b[]);
 void mm(int n, double* a, double* b, double* c);
 void mmasmu(int n, double* a, double* b, double* c);
+void mmasmu2(double* a, double* b, double* c);
 void mmasm(int n, double* a, double* b, double* c);
 void mmasmlu(int n, double* a, double* b, double* c);
 void block(int n, int si, int sj, int sk, double* a, double* b, double* c);
