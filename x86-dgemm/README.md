@@ -197,7 +197,7 @@ with packed doubles, i.e. 4x 64-bit doubles in
 256-bit ymm registers.
 
 Note that, in addition to the main loop, L88-101,
-there are also a head and tail code: 
+there is also the head and the tail code: 
 
 ``` 
  65 .LBB0_9:                                # %._crit_edge.us.us
