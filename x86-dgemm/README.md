@@ -60,7 +60,7 @@ supporting speculative execution and register
 renaming.
 The pipeline has 14-19 stages.
 
-The test system and 2x16 GB = 32 GB ddr4 memory:
+The test system has 2x16 GB = 32 GB ddr4 memory:
 
 ```
         Size: 16 GB
@@ -196,16 +196,75 @@ and `pd` versions of arm intrinsics, which operate
 with packed doubles, i.e. 4x 64-bit doubles in
 256-bit ymm registers.
 
+Note that, in addition to the main loop, L88-101,
+there are also a head and tail code: 
+
 ``` 
+ 65 .LBB0_9:                                # %._crit_edge.us.us
+ 66                                         #   in Loop: Header=BB0_3 Depth=2
+ 67         vmovupd %ymm0, (%r15,%r13,8)
+ 68         addq    $4, %r13
+ 69         addq    $32, %rdx
+ 70         cmpq    %rax, %r13
+ 71         jae     .LBB0_10
+
+
+ 88 .LBB0_6:                                # %.preheader.us.us.new
+ 89                                         #   Parent Loop BB0_2 Depth=1
+ 90                                         #     Parent Loop BB0_3 Depth=2
  91                                         # =>    This Inner Loop Header: Depth=3
  92         vbroadcastsd    -8(%r11,%rbx,8), %ymm1
  93         vmulpd  (%r12), %ymm1, %ymm1
  94         vaddpd  %ymm1, %ymm0, %ymm0
+
  95         vbroadcastsd    (%r11,%rbx,8), %ymm1
  96         vmulpd  (%r12,%r9), %ymm1, %ymm1
  97         vaddpd  %ymm1, %ymm0, %ymm0
+ 98         addq    $2, %rbx
+ 99         addq    %r10, %r12
+100         cmpq    %rbx, %r8
+101         jne     .LBB0_6
+
+
+106 # %bb.8:                                # %._crit_edge.us.us.epilog-lcssa
+107                                         #   in Loop: Header=BB0_3 Depth=2
+108         leaq    (%rcx,%r13,8), %r12
+109         vbroadcastsd    (%r14,%rbx,8), %ymm1
+110         imulq   %rax, %rbx
+111         vmulpd  (%r12,%rbx,8), %ymm1, %ymm1
+112         vaddpd  %ymm1, %ymm0, %ymm0
+113         jmp     .LBB0_9
 ```
 
-Note 2x broadcasts, 2x multiplications and 2x adds.
+L67 in the head code saves the resulting data in array `c`:
+```
+ 67         vmovupd %ymm0, (%r15,%r13,8)
+```
+Note that this is an unaligned load/store instruction.
+
+The tail code is likely because the length of the
+arrays, `n`, is passed to the function, and the compiler
+cannot know if it is a factor of the vector length of not:
+```
+void mmasmu(int n, double* a, double* b, double* c);
+```
+
+Another interesting observation is that the compiler
+seems to have auto unrolled by 2 -- L92-94 and L95-97
+have vector bcast, mul and add operations at different
+addresses of arrays `a` and `b`:
+```
+ 10             __m256d tmp = _mm256_loadu_pd(b+k*n+j);
+ 11             tmp = _mm256_mul_pd(_mm256_broadcast_sd(a+i*n+k), tmp);
+ 12             c0 = _mm256_add_pd(c0, tmp);
+ 13          }
+ 14          _mm256_storeu_pd(c+i*n+j, c0);
+```
+L98 increments the loop counter by 2. 
+
+So overall the code has 10 vector instructions:
+3x bcast, 3x mul, 3x adds and 1x store.
+Strangely I cannot find a vector load of `b`
+corresponding to `_mm256_loadu_pd(b+k*n+j)`.
 
 ## Same but with aligned load/store, `mmasm.c`.
