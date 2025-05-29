@@ -4,8 +4,9 @@
 
 #define   DIM       (1024) // (4096) // (2048) // (512)
 #define   TOL       (1e-10)
-#define   UNROLL    (8)
+#define   UNROLL    (4)
 #define   BLOCKSIZE (32)
+#define   ALIGN     (64) // align on 64-byte boundary
 
 void mm2d(double *c[], double *a[], double *b[]);
 void mm(int n, double* a, double* b, double* c);
