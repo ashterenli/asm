@@ -37,6 +37,10 @@ whithin `TOL` from the reference value.
 and `BLOCKSIZE` is the block size for
 the cache blocking version.
 
+To enable use of aligned avx 256 intrinsics,
+I use `aligned_alloc`, and align on 64 byte boundary.
+You can try uncommenting `malloc` allocations in `dgemm.c`.
+
 To build and run use the usual
 ```
 make all
