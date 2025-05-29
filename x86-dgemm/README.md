@@ -1,6 +1,10 @@
 Table of Contents
 =================
 
+* [Table of Contents](#table-of-contents)
+* [The code](#the-code)
+* [The test platform](#the-test-platform)
+* [Test results](#test-results)
 * [asm analysis](#asm-analysis)
    * [The naive 2D array code, mm.c](#the-naive-2d-array-code-mmc)
    * [The naive 1D version, mm1d.c](#the-naive-1d-version-mm1dc)
@@ -8,6 +12,7 @@ Table of Contents
    * [Same but with aligned load/store, mmasm.c.](#same-but-with-aligned-loadstore-mmasmc)
    * [Adding loop unrolling, mmasmlu.c](#adding-loop-unrolling-mmasmluc)
 
+# The code
 
 This example is motivated by sections "Going faster"
 from Patterson and Hennessy "Computer Organization and Design".
@@ -40,6 +45,8 @@ make run
 
 8 omp threads are used by default (total threads on my laptop).
 Adjust `OMP_NUM_THREDS` in `Makefile` for your system.
+
+# The test platform
 
 I compile with `-O3 -mavx2` (see the `Makefile`)
 using `FreeBSD clang version 18.1.6`.
@@ -83,6 +90,8 @@ The test system has 2x16 GB = 32 GB ddr4 memory:
         Type Detail: Synchronous Unbuffered (Unregistered)
         Speed: 2400 MT/s
 ```
+
+# Test results
 
 There is some run to run variablity in performance.
 For `DIM=512` I see something like this:
