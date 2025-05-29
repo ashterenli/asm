@@ -11,6 +11,7 @@ Table of Contents
    * [Adding asm intrinsics, load/store are not aligned, mmasmu.c](#adding-asm-intrinsics-loadstore-are-not-aligned-mmasmuc)
    * [Same but with aligned load/store, mmasm.c.](#same-but-with-aligned-loadstore-mmasmc)
    * [Adding loop unrolling, mmasmlu.c](#adding-loop-unrolling-mmasmluc)
+   * [Adding cache blocking, mmcb.c and block.c](#adding-cache-blocking-mmcbc-and-blockc)
 
 # The code
 
