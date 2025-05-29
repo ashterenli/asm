@@ -1,6 +1,5 @@
 #include <x86intrin.h>
 // #include <immintrin.h>
-#include <omp.h>
 
 #define   DIM       (1024) // (4096) // (2048) // (512)
 #define   TOL       (1e-10)

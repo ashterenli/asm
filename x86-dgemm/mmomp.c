@@ -1,4 +1,5 @@
 #include "dgemm.h"
+#include <omp.h>
 
 /* matrix multiply using asm, *aligned*, with loop unrolling
    and cache blocking, with omp */

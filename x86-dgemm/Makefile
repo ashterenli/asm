@@ -4,7 +4,7 @@ OBJ=	$(SRC:.c=.o)
 TMP=	$(SRC:.c=.bc) $(SRC:.c=.i) $(SRC:.c=.s)
 EXE=	dgemm.x
 
-CFLAGS=	-g -Wall -O3 -mavx2 -fopenmp -save-temps
+CFLAGS=	-Wall -O3 -mavx2 -fopenmp -save-temps
 
 all:	$(EXE)
 

@@ -39,7 +39,7 @@ the cache blocking version.
 
 To enable use of aligned avx 256 intrinsics,
 I use `aligned_alloc`, and align on 64 byte boundary.
-You can try uncommenting `malloc` allocations in `dgemm.c`.
+`malloc` allocations are commented out in `dgemm.c` by default,
 
 To build and run use the usual
 ```
@@ -444,5 +444,95 @@ stalls:
  88         vmovapd %ymm0, 448(%r9,%r11,8)
 ```
 
+## Adding cache blocking, `mmcb.c` and `block.c`
 
+The `block.c` code is very similar to `mmasmlu.c` --
+both use the same loop unrolling.
+The difference is an extra load in `block.c` because
+the prior values of `c` are required:
 
+```
+ 10             sum[u] = _mm256_load_pd(c+i*n+j+u*4); // load prior value
+```
+
+Hence, for this version of dgemm, `c` is set to `0` in
+the main, `dgemm.c`.
+
+However, the asm in `block.s` is longer than in `mmasmlu.s`,
+probably because the 3 loops for `i,j,k` now do not have
+constant start and end.
+Instead, the start and end are now variables, passed to `block.c`.
+Hence there are more load/store, add and mul calls.
+
+The outer loop starts with load and ends with store:
+
+```
+ 57 .LBB0_1:                                # %.preheader47
+
+ 66         vmovapd (%rax,%r13,8), %ymm3
+ 67         vmovapd 32(%rax,%r13,8), %ymm2
+ 68         vmovapd 64(%rax,%r13,8), %ymm1
+ 69         vmovapd 96(%rax,%r13,8), %ymm0
+
+<2 inner loops>
+
+117         vmovapd %ymm3, 128(%rax,%r13,8)
+118         vmovapd %ymm2, 160(%rax,%r13,8)
+119         vmovapd %ymm1, 192(%rax,%r13,8)
+120         vmovapd %ymm0, 224(%rax,%r13,8)
+
+126         jl      .LBB0_1
+```
+
+and the 2 inner loops are:
+
+```
+ 73 .LBB0_2:                                #   Parent Loop BB0_1 Depth=1
+ 74                                         # =>  This Inner Loop Header: Depth=2
+ 75         vbroadcastsd    8(%r8,%r14,8), %ymm4
+ 76         vmulpd  -96(%r15), %ymm4, %ymm5
+ 77         vaddpd  %ymm5, %ymm3, %ymm3
+ 78         vmulpd  -64(%r15), %ymm4, %ymm5
+ 79         vmulpd  -32(%r15), %ymm4, %ymm6
+ 80         vaddpd  %ymm5, %ymm2, %ymm2
+ 81         vaddpd  %ymm6, %ymm1, %ymm1
+ 82         vmulpd  (%r15), %ymm4, %ymm4
+ 83         vaddpd  %ymm4, %ymm0, %ymm0
+ 84         incq    %r14
+ 85         addq    %rcx, %r15
+ 86         cmpq    %r11, %r14
+ 87         jl      .LBB0_2
+ 88 # %bb.3:                                # %.preheader46.1
+ 89                                         #   in Loop: Header=BB0_1 Depth=1
+ 90         vmovapd %ymm3, (%rax,%r13,8)
+ 91         vmovapd %ymm2, 32(%rax,%r13,8)
+ 92         vmovapd %ymm1, 64(%rax,%r13,8)
+ 93         vmovapd %ymm0, 96(%rax,%r13,8)
+ 94         vmovapd 128(%rax,%r13,8), %ymm3
+ 95         vmovapd 160(%rax,%r13,8), %ymm2
+ 96         vmovapd 192(%rax,%r13,8), %ymm1
+ 97         vmovapd 224(%rax,%r13,8), %ymm0
+ 98         movq    %r9, %r14
+ 99         movq    %rsi, %r15
+100         .p2align        4, 0x90
+101 .LBB0_4:                                #   Parent Loop BB0_1 Depth=1
+102                                         # =>  This Inner Loop Header: Depth=2
+103         vbroadcastsd    8(%r8,%r15,8), %ymm4
+104         vmulpd  -96(%r14), %ymm4, %ymm5
+105         vaddpd  %ymm5, %ymm3, %ymm3
+106         vmulpd  -64(%r14), %ymm4, %ymm5
+107         vmulpd  -32(%r14), %ymm4, %ymm6
+108         vaddpd  %ymm5, %ymm2, %ymm2
+109         vaddpd  %ymm6, %ymm1, %ymm1
+110         vmulpd  (%r14), %ymm4, %ymm4
+111         vaddpd  %ymm4, %ymm0, %ymm0
+112         incq    %r15
+113         addq    %rcx, %r14
+114         cmpq    %r11, %r15
+115         jl      .LBB0_4
+```
+
+Note that the 2 inner loops are nearly indentical,
+only `r15` and `r14` are swapped.
+
+I don't really understand why there are 2 inner loops.
