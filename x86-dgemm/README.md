@@ -1,3 +1,14 @@
+Table of Contents
+=================
+
+* [asm analysis](#asm-analysis)
+   * [The naive 2D array code, mm.c](#the-naive-2d-array-code-mmc)
+   * [The naive 1D version, mm1d.c](#the-naive-1d-version-mm1dc)
+   * [Adding asm intrinsics, load/store are not aligned, mmasmu.c](#adding-asm-intrinsics-loadstore-are-not-aligned-mmasmuc)
+   * [Same but with aligned load/store, mmasm.c.](#same-but-with-aligned-loadstore-mmasmc)
+   * [Adding loop unrolling, mmasmlu.c](#adding-loop-unrolling-mmasmluc)
+
+
 This example is motivated by sections "Going faster"
 from Patterson and Hennessy "Computer Organization and Design".
 I'm looking at 5th edition, from 2014.
