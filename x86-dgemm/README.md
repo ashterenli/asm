@@ -153,6 +153,10 @@ The test system has 2x16 GB = 32 GB ddr4 memory:
 
 # Test results
 
+Note that all results are much lover than peak flops,
+which most likely means that Blas3 dgemm is much more
+clever than all versions here.
+
 There is some run to run variablity in performance.
 For `DIM=512` I see something like this:
 
