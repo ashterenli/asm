@@ -10,16 +10,7 @@ Using _mm256_fmadd_pd:
 
 https://www.intel.com/content/www/us/en/docs/cpp-compiler/developer-guide-reference/2021-10/mm-fmadd-pd-mm256-fmadd-pd.html
 
-From:
 https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html
-
-Latency and Throughput
-Arch               Latency Throughput (CPI)
-Alderlake          4       0.5
-Icelake Intel Core 4       0.5
-Icelake Xeon       4       0.5
-Sapphire Rapids    4       0.5
-Skylake            4       0.5
 */
 
 void mmfma(int n, double* a, double* b, double* c)

@@ -10,8 +10,10 @@ Table of Contents
    * [The naive 1D version, mm1d.c](#the-naive-1d-version-mm1dc)
    * [Adding asm intrinsics, load/store are not aligned, mmasmu.c](#adding-asm-intrinsics-loadstore-are-not-aligned-mmasmuc)
    * [Same but with aligned load/store, mmasm.c.](#same-but-with-aligned-loadstore-mmasmc)
+   * [Using fma instead of separate mul and add, mmfma.c](#using-fma-instead-of-separate-mul-and-add-mmfmac)
    * [Adding loop unrolling, mmasmlu.c](#adding-loop-unrolling-mmasmluc)
    * [Adding cache blocking, mmcb.c and block.c](#adding-cache-blocking-mmcbc-and-blockc)
+   * [Scaling efficiency](#scaling-efficiency)
 
 # The code
 
@@ -109,12 +111,13 @@ if it finds that another instruction form
 saves a register or eliminates a move.
 
 Also from: https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake#Individual_Core
-the kabylake core has 2x fma units.
+looks like the kabylake core has 2x fma units,
+on ports 0 and 1.
 
 Using the standard eqn for peak flops:
 
 ```
-ops/cycle/core = FMA/cycle s x vec_len x vector units / word len
+ops/cycle/core = FMA/cycle x vec_len x vector units / word len
 ```
 
 from all above info I get:
@@ -123,14 +126,12 @@ from all above info I get:
 2 x 256 x 2 / 64 = 16 flops/cycle/core
 
 single core:
-@1.7 GHz: 16 * 1.7 = 27.2 GF/core
-@3.6 GHz: 16 * 3.6 = 57.6 GF/core
+base clock @1.7 GHz: 16 * 1.7 = 27.2 GF/core
+ max boost @3.6 GHz: 16 * 3.6 = 57.6 GF/core
 
 4 cores:
 @1.7 GHz: 4* 16 * 1.7 = 109 GF
 ```
-
-
 
 This is a superscalar microarch,
 supporting speculative execution and register
@@ -421,6 +422,42 @@ The reason I made an unaligned version, is that
 the aligned version would segv for some array lengths.
 I need to investigate this further, and maybe compile
 with forced alignment.
+
+## Using fma instead of separate mul and add, `mmfma.c`
+
+The outer and the inner loops look like this:
+
+```
+ 65 .LBB0_9:                                # %._crit_edge.us.us
+ 66                                         #   in Loop: Header=BB0_3 Depth=2
+ 67         vmovapd %ymm0, (%r15,%r13,8)
+
+ 88 .LBB0_6:                                # %.preheader.us.us.new
+ 89                                         #   Parent Loop BB0_2 Depth=1
+ 90                                         #     Parent Loop BB0_3 Depth=2
+ 91                                         # =>    This Inner Loop Header: Depth=3
+ 92         vbroadcastsd    -8(%r9,%rbx,8), %ymm1
+ 93         vfmadd132pd     (%r12), %ymm0, %ymm1    # ymm1 = (ymm1 * mem) + ymm0
+ 94         vbroadcastsd    (%r9,%rbx,8), %ymm0
+ 95         vfmadd132pd     (%r12,%r10), %ymm1, %ymm0 # ymm0 = (ymm0 * mem) + ymm1
+ 96         addq    $2, %rbx
+ 97         addq    %r11, %r12
+ 98         cmpq    %rbx, %r8
+ 99         jne     .LBB0_6
+
+105                                         #   in Loop: Header=BB0_3 Depth=2
+106         vbroadcastsd    (%r14,%rbx,8), %ymm1
+107         leaq    (%rcx,%r13,8), %r12
+108         imulq   %rax, %rbx
+109         vfmadd231pd     (%r12,%rbx,8), %ymm1, %ymm0 # ymm0 = (ymm1 * mem) + ymm0
+110         jmp     .LBB0_9
+```
+
+I think the 2 separate fma calls in the inner loop
+correspond to 2x fma units in kabylake/skylake arch:
+https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg
+
+![skylake](https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg)
 
 ## Adding loop unrolling, `mmasmlu.c`
 

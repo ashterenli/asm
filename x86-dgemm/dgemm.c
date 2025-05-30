@@ -12,7 +12,7 @@ int main()
    int i,j,k;
 
    double *a[DIM], *b[DIM], *c[DIM],
-          *a1, *b1, *c1, *c2, *c3, *c4, *c5, *c6,
+          *a1, *b1, *c1, *c2, *c3, *c4, *c5, *c6, *c7,
           ref;
 
    for (int i=0; i<DIM; ++i) {
@@ -37,6 +37,7 @@ int main()
    c1 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c2 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c3 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
+   c7 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c4 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c5 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c6 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
@@ -47,8 +48,8 @@ int main()
    for (j=0; j<DIM; ++j) {
       a[i][j] = a1[i*DIM+j] = rand();
       b[i][j] = b1[i*DIM+j] = rand();
-//      a[i][j] = a1[i*DIM+j] = 1.0;  // for debug
-//      b[i][j] = b1[i*DIM+j] = 1.0;  // for debug
+      a[i][j] = a1[i*DIM+j] = 1.0;  // for debug
+      b[i][j] = b1[i*DIM+j] = 1.0;  // for debug
       c5[i*DIM+j] = 0.0; // needed only for cache blocking alg
       c6[i*DIM+j] = 0.0; // needed only for cache blocking alg
    }
@@ -95,6 +96,14 @@ int main()
           "mmasm:", wtime, "s", gf, "GF", wtime1/wtime);
 
    t1 = clock();   
+   mmfma(DIM, a1, b1, c7);
+   t2 = clock();
+   wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
+   gf = flops / wtime * 1e-9;
+   printf("%10s %10.2Le %s %10.2Le %s, %10.2Le faster than mm version\n",
+          "mmfma:", wtime, "s", gf, "GF", wtime1/wtime);
+
+   t1 = clock();   
    mmasmlu(DIM, a1, b1, c4);
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
@@ -119,7 +128,7 @@ int main()
           "mmomp:", wtime, "s", gf, "GF", wtime1/wtime);
 
    // check
-   #pragma omp parallel for collapse(2)
+   #pragma omp parallel for collapse(2) private(ref)
    for (i=0; i<DIM; ++i)
       for (j=0; j<DIM; ++j) {
          ref = 0.0;
@@ -127,14 +136,16 @@ int main()
             ref += a1[i*DIM + k] * b1[k*DIM + j];
          assert( fabs(c[i][j] - ref) < TOL );
          assert( fabs(c1[i*DIM + j] - ref) < TOL );
+//            printf("c2[ %d ]: %f  ref: %f\n", i*DIM + j, c2[i*DIM + j], ref);
          assert( fabs(c2[i*DIM + j] - ref) < TOL );
          assert( fabs(c3[i*DIM + j] - ref) < TOL );
+         assert( fabs(c7[i*DIM + j] - ref) < TOL );
          assert( fabs(c4[i*DIM + j] - ref) < TOL );
          assert( fabs(c5[i*DIM + j] - ref) < TOL );
          assert( fabs(c6[i*DIM + j] - ref) < TOL );
 /*
          if ( fabs(c4[i*DIM + j] - c1ref[i*DIM + j]) > TOL ) {
-            printf("c4[ %d ]: %f  cref: %f\n", i*DIM + j, c4[i*DIM + j], c1ref[i*DIM + j]);
+            printf("c4[ %d ]: %f  ref: %f\n", i*DIM + j, c4[i*DIM + j], ref);
             printf("****** ERROR\n");
             exit(1);
          }
