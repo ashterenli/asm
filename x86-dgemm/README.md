@@ -71,11 +71,18 @@ Model:                   142
 Model name:              Intel(R) Core(TM) i5-8350U CPU @ 1.70GHz
 ```
 
+From: https://www.intel.com/content/www/us/en/products/sku/124969/intel-core-i58350u-processor-6m-cache-up-to-3-60-ghz/specifications.html
+it can boost to 3.6 GHz,
+presumably for a single core only.
+
 This CPU uses Kaby Lake R core:
 https://en.wikichip.org/wiki/intel/cores/kaby_lake_r,
 which is based on Kaby Lake microarch:
 https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake,
-which itself seems to be very similar to Skylake.
+which itself seems to be very similar to Skylake --
+the page says:
+>Core identical to Skylake (client).
+
 In particular, from:
 https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake#Key_changes_from_Skylake
 > Same IPC as Skylake (i.e. performance/MHz is unchanged) 
@@ -84,13 +91,45 @@ From https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#
 under AVX family - FMA, for _mm256_fmadd_ps:
 ```
 Latency and Throughput
-Architecture	Latency	Throughput (CPI)
-Alderlake	4	0.5
-Icelake Intel Core	4	0.5
-Icelake Xeon	4	0.5
-Sapphire Rapids	4	0.5
-Skylake	4	0.5
+Architecture        Latency  Throughput (CPI)
+Alderlake           4        0.5
+Icelake Intel Core  4        0.5
+Icelake Xeon        4        0.5
+Sapphire Rapids     4        0.5
+Skylake             4        0.5
 ```
+
+This intrisic is translated into `VFMADD213PD` instruction:
+https://www.intel.com/content/www/us/en/docs/cpp-compiler/developer-guide-reference/2021-10/mm-fmadd-pd-mm256-fmadd-pd.html
+> The compiler defaults to using the VFMADD213PD instruction
+and uses the other forms VFMADD132PD or VFMADD231PD
+only if a low level optimization decides it is useful or necessary.
+For example, the compiler could change the default
+if it finds that another instruction form
+saves a register or eliminates a move.
+
+Also from: https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake#Individual_Core
+the kabylake core has 2x fma units.
+
+Using the standard eqn for peak flops:
+
+```
+ops/cycle/core = FMA/cycle s x vec_len x vector units / word len
+```
+
+from all above info I get:
+
+```
+2 x 256 x 2 / 64 = 16 flops/cycle/core
+
+single core:
+@1.7 GHz: 16 * 1.7 = 27.2 GF/core
+@3.6 GHz: 16 * 3.6 = 57.6 GF/core
+
+4 cores:
+@1.7 GHz: 4* 16 * 1.7 = 109 GF
+```
+
 
 
 This is a superscalar microarch,
