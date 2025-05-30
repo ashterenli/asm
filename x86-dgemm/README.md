@@ -153,7 +153,7 @@ The test system has 2x16 GB = 32 GB ddr4 memory:
 
 # Test results
 
-Note that all results are much lover than peak flops,
+Note that all my results are much lower than peak flops,
 which most likely means that Blas3 dgemm is much more
 clever than all versions here.
 
@@ -162,36 +162,41 @@ For `DIM=512` I see something like this:
 
 ```
 $ OMP_NUM_THREADS=8 ./dgemm.x
-     mm2d:   2.73e-01 s   9.82e-01 GF
-       mm:   2.11e-01 s   1.27e+00 GF
-   mmasmu:   5.47e-02 s   4.91e+00 GF,   3.86e+00 faster than mm version
-    mmasm:   5.47e-02 s   4.91e+00 GF,   3.86e+00 faster than mm version
-  mmasmlu:   2.34e-02 s   1.15e+01 GF,   9.00e+00 faster than mm version
-     mmcb:   1.56e-02 s   1.72e+01 GF,   1.35e+01 faster than mm version
-    mmomp:   5.38e-03 s   4.99e+01 GF,   3.92e+01 faster than mm version
+     mm2d:   2.81e-01 s   9.54e-01 GF
+       mm:   2.27e-01 s   1.18e+00 GF
+   mmasmu:   5.47e-02 s   4.91e+00 GF,   4.14e+00 faster than mm version
+    mmasm:   5.47e-02 s   4.91e+00 GF,   4.14e+00 faster than mm version
+    mmfma:   5.47e-02 s   4.91e+00 GF,   4.14e+00 faster than mm version
+  mmasmlu:   3.12e-02 s   8.59e+00 GF,   7.25e+00 faster than mm version
+     mmcb:   1.56e-02 s   1.72e+01 GF,   1.45e+01 faster than mm version
+    mmomp:   5.41e-03 s   4.96e+01 GF,   4.19e+01 faster than mm version
 ```
 
-Note that the asm version `mmasmu` is ~3.85x faster than
-the serial version `mm`, while the theoretical speed-up from avx256 is 4x.
+Note that the asm versions are >4x faster than
+the serial version `mm`,
+while the theoretical speed-up from avx256 is 4x.
 The most optimised version `mmomp` is ~40x faster than the naive version `mm`
 for this matrix size.
 The "most optimised" in this example means: x86 asm intrinsics for packed doubles,
 loop unrolling, cache blocking and OpenMP threading.
+Also note that fma does not give any measureable advantage over separate
+mul + add.
 
-For `DIM=1024` the max speed-up is ~130x:
+For `DIM=1024` the max speed-up is >200x:
 
 ```
 $ OMP_NUM_THREADS=8 ./dgemm.x
-     mm2d:   8.95e+00 s   2.40e-01 GF
-       mm:   8.47e+00 s   2.54e-01 GF
-   mmasmu:   1.70e+00 s   1.27e+00 GF,   5.00e+00 faster than mm version
-    mmasm:   1.66e+00 s   1.29e+00 GF,   5.09e+00 faster than mm version
-  mmasmlu:   1.26e+00 s   1.71e+00 GF,   6.73e+00 faster than mm version
-     mmcb:   1.72e-01 s   1.25e+01 GF,   4.93e+01 faster than mm version
-    mmomp:   6.21e-02 s   3.46e+01 GF,   1.36e+02 faster than mm version
+     mm2d:   9.83e+00 s   2.19e-01 GF
+       mm:   1.20e+01 s   1.80e-01 GF
+   mmasmu:   1.80e+00 s   1.20e+00 GF,   6.66e+00 faster than mm version
+    mmasm:   1.79e+00 s   1.20e+00 GF,   6.69e+00 faster than mm version
+    mmfma:   2.14e+00 s   1.00e+00 GF,   5.59e+00 faster than mm version
+  mmasmlu:   1.27e+00 s   1.70e+00 GF,   9.45e+00 faster than mm version
+     mmcb:   1.80e-01 s   1.20e+01 GF,   6.66e+01 faster than mm version
+    mmomp:   5.54e-02 s   3.88e+01 GF,   2.16e+02 faster than mm version
 ```
 
-Note that adding just simd alone (`mmasmu` and `mmasm`) gives speed-up
+Note that adding just simd alone (`mmasmu`, `mmasm` and `mmfma`) gives speed-up
 significantly higher than the theoretical 4x.
 Probably need to compare various cache hit/miss metrics, e.g. with `perf`.
 
