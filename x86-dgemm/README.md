@@ -80,6 +80,17 @@ In particular, from:
 https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake#Key_changes_from_Skylake
 > Same IPC as Skylake (i.e. performance/MHz is unchanged) 
 
+From https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#
+under AVX family - FMA, for _mm256_fmadd_ps:
+>Latency and Throughput
+Architecture	Latency	Throughput (CPI)
+Alderlake	4	0.5
+Icelake Intel Core	4	0.5
+Icelake Xeon	4	0.5
+Sapphire Rapids	4	0.5
+Skylake	4	0.5
+
+
 This is a superscalar microarch,
 supporting speculative execution and register
 renaming.
