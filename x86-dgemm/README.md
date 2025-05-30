@@ -455,7 +455,10 @@ The outer and the inner loops look like this:
 
 I think the 2 separate fma calls in the inner loop
 correspond to 2x fma units in kabylake/skylake arch:
-https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg
+https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg.
+See Execution Engine (light green) --
+Execution Units (EUs, darker green) --
+list of &mu;OP for Ports 0 and 1.
 
 ![skylake](https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg)
 
