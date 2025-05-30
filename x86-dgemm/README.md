@@ -462,6 +462,13 @@ list of &mu;OP for Ports 0 and 1.
 
 ![skylake](https://en.wikichip.org/w/images/7/7e/skylake_block_diagram.svg)
 
+Also note that the inner loop uses 132 form of `VFMADD<XXX>PD`
+while the tail call uses the 231 form.
+The differences are explained in the Intel arch manual:
+https://software.intel.com/en-us/download/intel-64-and-ia-32-architectures-sdm-combined-volumes-1-2a-2b-2c-2d-3a-3b-3c-3d-and-4
+under
+14.5.1 FMA Instruction Operand Order and Arithmetic Behavior
+
 ## Adding loop unrolling, `mmasmlu.c`
 
 With unrolling by 4 I get this asm:
