@@ -102,36 +102,34 @@ There is some run to run variablity in performance.
 For `DIM=512` I see something like this:
 
 ```
-OMP_NUM_THREADS=8 ./dgemm.x
-     mm2d wtime     2.73438e-01
-       mm wtime     2.10938e-01
-   mmasmu wtime     5.46875e-02, which is 3.857143e+00 faster than mm version
-    mmasm wtime     4.68750e-02, which is 4.500000e+00 faster than mm version
-  mmasmlu wtime     3.12500e-02, which is 6.750000e+00 faster than mm version
-     mmcb wtime     1.56250e-02, which is 1.350000e+01 faster than mm version
-    mmomp wtime     5.18513e-03, which is 4.068126e+01 faster than mm version
+$ OMP_NUM_THREADS=8 ./dgemm.x
+     mm2d:   2.73e-01 s   9.82e-01 GF
+       mm:   2.11e-01 s   1.27e+00 GF
+   mmasmu:   5.47e-02 s   4.91e+00 GF,   3.86e+00 faster than mm version
+    mmasm:   5.47e-02 s   4.91e+00 GF,   3.86e+00 faster than mm version
+  mmasmlu:   2.34e-02 s   1.15e+01 GF,   9.00e+00 faster than mm version
+     mmcb:   1.56e-02 s   1.72e+01 GF,   1.35e+01 faster than mm version
+    mmomp:   5.38e-03 s   4.99e+01 GF,   3.92e+01 faster than mm version
 ```
 
-Note that the unaligned asm version `mmasmu` is ~3.85x faster than
+Note that the asm version `mmasmu` is ~3.85x faster than
 the serial version `mm`, while the theoretical speed-up from avx256 is 4x.
-The aligned asm version `mmasm` is ~4.5x faster, i.e. higher than the
-theoretical 4x, which probably means it probably achieves better cache reuse.
 The most optimised version `mmomp` is ~40x faster than the naive version `mm`
-for this matrix size..
+for this matrix size.
 The "most optimised" in this example means: x86 asm intrinsics for packed doubles,
 loop unrolling, cache blocking and OpenMP threading.
 
-For `DIM=1024` the max speed-up is nearly ~200x:
+For `DIM=1024` the max speed-up is ~130x:
 
 ```
-OMP_NUM_THREADS=8 ./dgemm.x
-     mm2d wtime     9.10156e+00
-       mm wtime     1.12422e+01
-   mmasmu wtime     1.68750e+00, which is 6.662037e+00 faster than mm version
-    mmasm wtime     1.67188e+00, which is 6.724299e+00 faster than mm version
-  mmasmlu wtime     1.25000e+00, which is 8.993750e+00 faster than mm version
-     mmcb wtime     1.79688e-01, which is 6.256522e+01 faster than mm version
-    mmomp wtime     5.70140e-02, which is 1.971830e+02 faster than mm version
+$ OMP_NUM_THREADS=8 ./dgemm.x
+     mm2d:   8.95e+00 s   2.40e-01 GF
+       mm:   8.47e+00 s   2.54e-01 GF
+   mmasmu:   1.70e+00 s   1.27e+00 GF,   5.00e+00 faster than mm version
+    mmasm:   1.66e+00 s   1.29e+00 GF,   5.09e+00 faster than mm version
+  mmasmlu:   1.26e+00 s   1.71e+00 GF,   6.73e+00 faster than mm version
+     mmcb:   1.72e-01 s   1.25e+01 GF,   4.93e+01 faster than mm version
+    mmomp:   6.21e-02 s   3.46e+01 GF,   1.36e+02 faster than mm version
 ```
 
 Note that adding just simd alone (`mmasmu` and `mmasm`) gives speed-up
@@ -141,27 +139,28 @@ Probably need to compare various cache hit/miss metrics, e.g. with `perf`.
 For `DIM=2048` the max speed-up is above 200x:
 
 ```
-OMP_NUM_THREADS=8 ./dgemm.x
-     mm2d wtime     5.14766e+01
-       mm wtime     1.30273e+02
-   mmasmu wtime     3.13516e+01, which is 4.155245e+00 faster than mm version
-    mmasm wtime     2.99453e+01, which is 4.350378e+00 faster than mm version
-  mmasmlu wtime     1.03750e+01, which is 1.255648e+01 faster than mm version
-     mmcb wtime     1.97656e+00, which is 6.590909e+01 faster than mm version
-    mmomp wtime     5.79306e-01, which is 2.248784e+02 faster than mm version
+ $ OMP_NUM_THREADS=8 ./dgemm.x
+     mm2d:   4.86e+01 s   3.53e-01 GF
+       mm:   1.29e+02 s   1.33e-01 GF
+   mmasmu:   2.94e+01 s   5.83e-01 GF,   4.37e+00 faster than mm version
+    mmasm:   2.92e+01 s   5.87e-01 GF,   4.40e+00 faster than mm version
+  mmasmlu:   9.84e+00 s   1.75e+00 GF,   1.31e+01 faster than mm version
+     mmcb:   2.23e+00 s   7.72e+00 GF,   5.78e+01 faster than mm version
+    mmomp:   6.61e-01 s   2.60e+01 GF,   1.95e+02 faster than mm version
 ```
 
-and ~180x for `DIM=4096`:
+and ~170x for `DIM=4096`, with avx256 showing the speed-up
+of very close to the theoretical 4x:
 
 ```
-OMP_NUM_THREADS=8 ./dgemm.x
-     mm2d wtime     5.73609e+02
-       mm wtime     1.04591e+03
-   mmasmu wtime     2.50062e+02, which is 4.182579e+00 faster than mm version
-    mmasm wtime     2.49906e+02, which is 4.185194e+00 faster than mm version
-  mmasmlu wtime     9.50156e+01, which is 1.100773e+01 faster than mm version
-     mmcb wtime     1.67109e+01, which is 6.258813e+01 faster than mm version
-    mmomp wtime     5.74920e+00, which is 1.819219e+02 faster than mm version
+$ OMP_NUM_THREADS=8 ./dgemm.x
+     mm2d:   5.16e+02 s   2.66e-01 GF
+       mm:   1.05e+03 s   1.31e-01 GF
+   mmasmu:   2.61e+02 s   5.26e-01 GF,   4.01e+00 faster than mm version
+    mmasm:   2.59e+02 s   5.31e-01 GF,   4.04e+00 faster than mm version
+  mmasmlu:   9.06e+01 s   1.52e+00 GF,   1.16e+01 faster than mm version
+     mmcb:   2.08e+01 s   6.61e+00 GF,   5.03e+01 faster than mm version
+    mmomp:   6.21e+00 s   2.21e+01 GF,   1.68e+02 faster than mm version
 ```
 
 # asm analysis
@@ -537,3 +536,10 @@ Note that the 2 inner loops are nearly indentical,
 only `r15` and `r14` are swapped.
 
 I don't really understand why there are 2 inner loops.
+
+## Scaling efficiency
+
+It is interesting to compare how performance of different
+algorithms changes with scale, i.e. with the matrix size:
+
+![scaling eff](eff.png)
