@@ -75,8 +75,10 @@ This CPU uses Kaby Lake R core:
 https://en.wikichip.org/wiki/intel/cores/kaby_lake_r,
 which is based on Kaby Lake microarch:
 https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake,
-which itself seems to be very similar to, or even identical,
-to Skylake.
+which itself seems to be very similar to Skylake.
+In particular, from:
+https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake#Key_changes_from_Skylake
+> Same IPC as Skylake (i.e. performance/MHz is unchanged) 
 
 This is a superscalar microarch,
 supporting speculative execution and register
