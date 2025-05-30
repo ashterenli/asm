@@ -82,13 +82,15 @@ https://en.wikichip.org/wiki/intel/microarchitectures/kaby_lake#Key_changes_from
 
 From https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#
 under AVX family - FMA, for _mm256_fmadd_ps:
->Latency and Throughput
+```
+Latency and Throughput
 Architecture	Latency	Throughput (CPI)
 Alderlake	4	0.5
 Icelake Intel Core	4	0.5
 Icelake Xeon	4	0.5
 Sapphire Rapids	4	0.5
 Skylake	4	0.5
+```
 
 
 This is a superscalar microarch,
