@@ -13,6 +13,7 @@ void mmasmu(int n, double* a, double* b, double* c);
 void mmasmu2(double* a, double* b, double* c);
 void mmasm(int n, double* a, double* b, double* c);
 void mmfma(int n, double* a, double* b, double* c);
+void mmfma512(int n, double* a, double* b, double* c);
 void mmasmlu(int n, double* a, double* b, double* c);
 void block(int n, int si, int sj, int sk, double* a, double* b, double* c);
 void mmcb(int n, double* a, double* b, double* c);
