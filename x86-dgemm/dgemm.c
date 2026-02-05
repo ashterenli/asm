@@ -12,7 +12,7 @@ int main()
    int i,j,k;
 
    double *a[DIM], *b[DIM], *c[DIM],
-          *a1, *b1, *c1, *c2, *c3, *c4, *c5, *c6, *c7,
+          *a1, *b1, *c1, *c2, *c3, *c4, *c5, *c6, *c7, *c8,
           ref;
 
    for (int i=0; i<DIM; ++i) {
@@ -37,10 +37,11 @@ int main()
    c1 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c2 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c3 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
-   c7 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c4 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c5 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
    c6 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
+   c7 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
+   c8 = (double*)aligned_alloc(ALIGN, DIM*DIM*sizeof(double));
 
    srand(time(NULL));
 
@@ -104,6 +105,14 @@ int main()
           "mmfma:", wtime, "s", gf, "GF", wtime1/wtime);
 
    t1 = clock();   
+   mmfma512(DIM, a1, b1, c8);
+   t2 = clock();
+   wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
+   gf = flops / wtime * 1e-9;
+   printf("%10s %10.2Le %s %10.2Le %s, %10.2Le faster than mm version\n",
+          "mmfma512:", wtime, "s", gf, "GF", wtime1/wtime);
+
+   t1 = clock();   
    mmasmlu(DIM, a1, b1, c4);
    t2 = clock();
    wtime = (long double)(t2 - t1) / CLOCKS_PER_SEC;
@@ -140,6 +149,7 @@ int main()
          assert( fabs(c2[i*DIM + j] - ref) < TOL );
          assert( fabs(c3[i*DIM + j] - ref) < TOL );
          assert( fabs(c7[i*DIM + j] - ref) < TOL );
+         assert( fabs(c8[i*DIM + j] - ref) < TOL );
          assert( fabs(c4[i*DIM + j] - ref) < TOL );
          assert( fabs(c5[i*DIM + j] - ref) < TOL );
          assert( fabs(c6[i*DIM + j] - ref) < TOL );

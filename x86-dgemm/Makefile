@@ -5,7 +5,7 @@ TMP=	$(SRC:.c=.bc) $(SRC:.c=.i) $(SRC:.c=.s)
 EXE=	dgemm.x
 
 #CFLAGS=	-Wall -O3 -mavx2 -mfma -fopenmp -save-temps
-CFLAGS=	-Wall -O2 -mfma -fopenmp -save-temps
+CFLAGS=	-march=znver4 -Wall -O3 -mfma -fopenmp -save-temps
 
 all:	$(EXE)
 

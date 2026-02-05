@@ -1,7 +1,7 @@
 #include <x86intrin.h>
 // #include <immintrin.h>
 
-#define   DIM       (1024) // (4096) // (2048) // (512)
+#define   DIM       (4096) // (2048) // (1024) // (512)
 #define   TOL       (1e-10)
 #define   UNROLL    (4)
 #define   BLOCKSIZE (32)
